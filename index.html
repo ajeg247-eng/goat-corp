@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>📋 Mi Workspace</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  <style>
+    :root {
+      --bg-app: #f5f5f7; --bg-panel: #ffffff; --bg-hover: #f0f0f0; --bg-active: #ebf5ff;
+      --text-primary: #1d1d1f; --text-secondary: #86868b; --text-tertiary: #aeaeb2;
+      --primary: #007aff; --primary-hover: #0062cc; --danger: #ff3b30; --success: #34c759;
+      --border: #d2d2d7; --radius-sm: 6px; --radius-md: 12px; --radius-lg: 16px;
+      --shadow-sm: 0 1px 2px rgba(0,0,0,0.05); --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+      --font: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      --logo-size: 200px; --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    [data-theme="dark"] {
+      --bg-app: #000000; --bg-panel: #1c1c1e; --bg-hover: #2c2c2e; --bg-active: rgba(0, 122, 255, 0.15);
+      --text-primary: #f5f5f7; --text-secondary: #8e8e93; --primary: #0a84ff; --border: #38383a;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; outline: none; }
+    body { font-family: var(--font); background: var(--bg-app); color: var(--text-primary); height: 100vh; display: flex; overflow: hidden; font-size: 14px; background-size: cover; background-position: center; }
+    
+    #splash { position: fixed; inset: 0; background: var(--bg-panel); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; animation: fadeOut 0.8s ease-in-out 2s forwards; }
+    @keyframes fadeOut { to { opacity: 0; visibility: hidden; pointer-events: none; } }
+    #splash-logo { width: var(--logo-size); height: var(--logo-size); animation: popIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; opacity: 0; transform: scale(0.5); }
+    #splash-logo img { width: 100%; height: 100%; object-fit: contain; }
+    @keyframes popIn { to { opacity: 1; transform: scale(1); } }
+
+    .app-shell { display: flex; width: 100%; height: 100%; }
+    .sidebar { width: 240px; background: rgba(255,255,255,0.8); backdrop-filter: blur(20px); border-right: 1px solid var(--border); display: flex; flex-direction: column; z-index: 20; transition: var(--transition); }
+    [data-theme="dark"] .sidebar { background: rgba(28,28,30,0.8); }
+    .brand { padding: 20px; border-bottom: 1px solid var(--border); }
+    .brand-text { font-weight: 700; font-size: 16px; letter-spacing: -0.5px; color: var(--text-primary); }
+    
+    .nav-section { padding: 16px 12px; flex: 1; overflow-y: auto; }
+    .nav-label { font-size: 11px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; padding: 0 12px; }
+    .nav-item { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-radius: 8px; color: var(--text-primary); cursor: pointer; font-weight: 500; transition: var(--transition); margin-bottom: 2px; font-size: 13px; }
+    .nav-item i { font-size: 18px; opacity: 0.7; }
+    .nav-item:hover { background: var(--bg-hover); }
+    .nav-item.active { background: var(--bg-active); color: var(--primary); font-weight: 600; }
+    .nav-item.active i { opacity: 1; }
+    
+    .quote-footer { padding: 16px; border-top: 1px solid var(--border); background: rgba(0,0,0,0.02); }
+    .quote-text { font-size: 11px; font-style: italic; color: var(--text-secondary); line-height: 1.4; cursor: pointer; }
+    .quote-text:hover { color: var(--primary); }
+    .quote-auth { font-size: 10px; font-weight: 600; color: var(--text-tertiary); margin-top: 4px; text-align: right; }
+
+    .main-content { flex: 1; display: flex; flex-direction: column; min-width: 0; background: transparent; }
+    .top-bar { height: 52px; background: rgba(255,255,255,0.8); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; padding: 0 24px; }
+    [data-theme="dark"] .top-bar { background: rgba(28,28,30,0.8); }
+    .breadcrumbs { display: flex; align-items: center; gap: 8px; color: var(--text-secondary); font-size: 13px; font-weight: 500; }
+    .breadcrumbs .current { color: var(--text-primary); font-weight: 700; }
+    .top-actions { display: flex; gap: 8px; align-items: center; }
+    .btn-icon { width: 32px; height: 32px; border-radius: 50%; border: none; background: transparent; color: var(--text-secondary); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: var(--transition); font-size: 18px; }
+    .btn-icon:hover { background: var(--bg-hover); color: var(--text-primary); }
+    .btn-primary { background: var(--primary); color: white; padding: 6px 14px; border-radius: 18px; border: none; font-weight: 600; font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: var(--transition); }
+    .btn-primary:hover { background: var(--primary-hover); opacity: 0.9; }
+
+    .workspace { flex: 1; padding: 24px; overflow-x: auto; overflow-y: hidden; display: flex; gap: 20px; align-items: flex-start; }
+    .workspace.compact { overflow-y: auto; flex-direction: column; padding: 24px; align-items: center; }
+
+    /* macOS Calculator Styles (Wide Version) */
+    .mac-calc-container {
+      width: 100%; max-width: 800px; background: #000000; border-radius: 24px;
+      padding: 20px; box-shadow: 0 20px 50px rgba(0,0,0,0.4);
+    }
+    .mac-calc-display {
+      width: 100%; height: 100px; background: transparent; color: white;
+      font-size: 64px; font-weight: 300; text-align: right; padding: 0 20px;
+      box-sizing: border-box; margin-bottom: 20px; overflow: hidden;
+      text-overflow: ellipsis; white-space: nowrap; line-height: 100px;
+    }
+    .mac-calc-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+    .calc-btn {
+      width: 100%; height: 70px; border-radius: 16px; border: none;
+      font-size: 32px; font-weight: 500; cursor: pointer; transition: 0.15s;
+      display: flex; align-items: center; justify-content: center; user-select: none;
+    }
+    .calc-btn:active { transform: scale(0.96); opacity: 0.8; }
+    .calc-btn.num { background: #333333; color: white; }
+    .calc-btn.num:hover { background: #737373; }
+    .calc-btn.func { background: #A5A5A5; color: black; }
+    .calc-btn.func:hover { background: #D9D9D9; }
+    .calc-btn.op { background: #FF9500; color: white; font-size: 36px; }
+    .calc-btn.op:hover { background: #FCC57A; }
+    .calc-btn.op.active { background: white; color: #FF9500; }
+    .calc-btn.zero { grid-column: span 2; aspect-ratio: auto; border-radius: 16px; justify-content: flex-start; padding-left: 30px; }
+
+    /* Trello Styles */
+    .list { background: var(--bg-hover); border-radius: var(--radius-md); width: 280px; max-width: 280px; display: flex; flex-direction: column; max-height: 100%; transition: var(--transition); }
+    .list-header { padding: 12px 12px 4px 12px; font-weight: 700; display: flex; justify-content: space-between; align-items: center; position: relative; color: var(--text-primary); }
+    .list-title-input { flex: 1; border: none; background: transparent; font-weight: 700; font-size: 14px; color: var(--text-primary); padding: 4px 8px; margin: -4px -8px; border-radius: 4px; }
+    .list-title-input:focus { background: var(--bg-panel); box-shadow: 0 0 0 2px var(--primary); }
+    .list-count { font-size: 11px; color: var(--text-secondary); margin-left: 8px; font-weight: 600; }
+    .list-cards { padding: 8px; flex: 1; overflow-y: auto; min-height: 40px; display: flex; flex-direction: column; gap: 8px; }
+    
+    .card { background: var(--bg-panel); border-radius: 8px; padding: 10px; cursor: grab; box-shadow: 0 1px 2px rgba(0,0,0,0.1); position: relative; transition: var(--transition); }
+    .card:hover { box-shadow: 0 4px 8px rgba(0,0,0,0.15); transform: translateY(-1px); }
+    .card-cover { height: 100px; background-size: cover; background-position: center; border-radius: 4px; margin: -10px -10px 8px -10px; position: relative; }
+    .card-cover-overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.4), transparent); border-radius: 4px; }
+    .card-stripe { position: absolute; top: 0; left: 0; width: 4px; height: 100%; border-radius: 4px 0 0 4px; }
+    .card-title { font-weight: 600; font-size: 13px; margin-bottom: 4px; line-height: 1.4; color: var(--text-primary); }
+    .card-desc { font-size: 12px; color: var(--text-secondary); margin-bottom: 6px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .card-meta { display: flex; align-items: center; gap: 6px; font-size: 10px; color: var(--text-secondary); }
+    .meta-item { display: flex; align-items: center; gap: 3px; background: var(--bg-hover); padding: 2px 6px; border-radius: 10px; }
+    
+    .three-dots { position: absolute; top: 8px; right: 8px; z-index: 5; }
+    .drop-menu { display: none; position: absolute; top: 100%; right: 0; background: var(--bg-panel); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.15); min-width: 150px; z-index: 10; overflow: hidden; }
+    .drop-menu.show { display: block; animation: modalIn 0.15s; }
+    .drop-item { padding: 8px 12px; cursor: pointer; font-size: 13px; display: flex; align-items: center; gap: 8px; transition: 0.1s; color: var(--text-primary); }
+    .drop-item:hover { background: var(--bg-hover); }
+    .drop-item.danger { color: var(--danger); }
+
+    .add-card-btn { background: transparent; border: none; color: var(--text-secondary); padding: 8px 12px; cursor: pointer; text-align: left; font-size: 13px; border-radius: 0 0 var(--radius-md) var(--radius-md); transition: var(--transition); width: 100%; display: flex; align-items: center; gap: 6px; }
+    .add-card-btn:hover { background: rgba(0,0,0,0.05); color: var(--text-primary); }
+    .add-list-btn { width: 280px; height: 40px; background: rgba(0,0,0,0.05); border: 2px dashed var(--border); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text-secondary); font-weight: 600; transition: var(--transition); }
+    .add-list-btn:hover { background: rgba(0,0,0,0.08); border-color: var(--text-secondary); }
+
+    /* macOS Calendar Styles */
+    .mac-cal-container { width: 100%; max-width: 800px; margin: 0 auto; background: var(--bg-panel); border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); overflow: hidden; }
+    .mac-cal-header { display: flex; justify-content: space-between; align-items: center; padding: 20px 24px; background: var(--bg-panel); border-bottom: 1px solid var(--border); }
+    .mac-cal-title { font-size: 20px; font-weight: 700; color: var(--text-primary); }
+    .mac-cal-nav { display: flex; gap: 8px; }
+    .mac-cal-btn { width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--border); background: var(--bg-panel); color: var(--text-primary); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
+    .mac-cal-btn:hover { background: var(--bg-hover); }
+    .mac-cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; background: var(--border); padding: 1px; }
+    .mac-cal-head { background: var(--bg-app); padding: 10px; text-align: center; font-size: 11px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; }
+    .mac-cal-day { background: var(--bg-panel); min-height: 100px; padding: 8px; position: relative; transition: 0.2s; cursor: pointer; display: flex; flex-direction: column; gap: 4px; }
+    .mac-cal-day:hover { background: var(--bg-hover); }
+    .mac-cal-day.other-month { opacity: 0.3; }
+    .mac-cal-num { font-size: 13px; font-weight: 600; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; border-radius: 50%; color: var(--text-primary); }
+    .mac-cal-day.today .mac-cal-num { background: var(--primary); color: white; }
+    .mac-cal-task { font-size: 10px; background: rgba(0,122,255,0.1); color: var(--primary); padding: 2px 4px; border-radius: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+    /* Modal & UI */
+    .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.4); display: none; justify-content: center; align-items: center; z-index: 100; backdrop-filter: blur(5px); padding: 20px; }
+    .modal.active { display: flex; animation: modalIn 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+    @keyframes modalIn { from { opacity: 0; transform: scale(0.96); } to { opacity: 1; transform: scale(1); } }
+    .modal-card { background: var(--bg-panel); width: 100%; max-width: 480px; border-radius: 16px; box-shadow: 0 20px 40px rgba(0,0,0,0.2); overflow: hidden; }
+    .modal-header { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+    .modal-header h3 { font-size: 16px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+    .modal-body { padding: 20px; max-height: 70vh; overflow-y: auto; }
+    .form-group { margin-bottom: 16px; }
+    .form-group label { display: block; font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px; }
+    .form-control { width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-app); color: var(--text-primary); font-family: var(--font); transition: var(--transition); font-size: 14px; }
+    .form-control:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.2); }
+    .modal-footer { padding: 12px 20px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 10px; background: var(--bg-app); }
+    .btn-ghost { background: transparent; border: 1px solid var(--border); color: var(--text-primary); padding: 8px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: var(--transition); }
+    .btn-ghost:hover { background: var(--bg-hover); }
+
+    .mobile-toggle { display: none; position: fixed; top: 12px; left: 12px; z-index: 30; width: 36px; height: 36px; background: var(--bg-panel); border-radius: 50%; box-shadow: var(--shadow-md); align-items: center; justify-content: center; border: none; cursor: pointer; color: var(--text-primary); font-size: 18px; }
+    @media (max-width: 768px) {
+      .sidebar { position: fixed; left: -260px; height: 100%; z-index: 40; box-shadow: 10px 0 30px rgba(0,0,0,0.2); }
+      .sidebar.open { left: 0; }
+      .mobile-toggle { display: flex; }
+      .workspace { flex-direction: column; overflow-y: auto; }
+      .list, .add-list-btn { width: 100%; max-width: 100%; }
+      .mac-cal-container, .mac-calc-container { max-width: 100%; }
+      .mac-cal-day { min-height: 60px; }
+      .calc-btn { height: 50px; font-size: 24px; }
+      .mac-calc-display { height: 70px; font-size: 48px; line-height: 70px; }
+    }
+    
+    .storage-bar { height: 6px; background: var(--border); border-radius: 3px; margin-top: 8px; overflow: hidden; }
+    .storage-fill { height: 100%; background: var(--success); width: 0%; transition: width 0.5s; }
+    .storage-fill.warn { background: var(--danger); }
+  </style>
+</head>
+<body>
+
+  <div id="splash"><div id="splash-logo">📋</div></div>
+  <button class="mobile-toggle" onclick="document.querySelector('.sidebar').classList.toggle('open')"><i class="ph ph-list"></i></button>
+
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand"><span class="brand-text">Mi Espacio</span></div>
+      <nav class="nav-section">
+        <div class="nav-label">Principal</div>
+        <div class="nav-item active" data-view="board"><i class="ph ph-kanban"></i><span>Tablero</span></div>
+        <div class="nav-item" data-view="inv"><i class="ph ph-folder-notch-open"></i><span>Archivos</span></div>
+        <div class="nav-label" style="margin-top:24px;">Herramientas</div>
+        <div class="nav-item" data-view="calc"><i class="ph ph-calculator"></i><span>Calculadora</span></div>
+        <div class="nav-item" data-view="cal"><i class="ph ph-calendar-blank"></i><span>Calendario</span></div>
+        <div class="nav-label">Personal</div>
+        <div class="nav-item" data-view="notes"><i class="ph ph-lock-key"></i><span>Bóveda</span></div>
+        <div class="nav-item" data-view="trash"><i class="ph ph-trash"></i><span>Papelera</span></div>
+      </nav>
+      <div class="quote-footer">
+        <div class="quote-text" id="qTxt">"Cargando frases..."</div>
+        <div class="quote-auth" id="qAut">-</div>
+      </div>
+    </aside>
+
+    <div class="main-content">
+      <header class="top-bar">
+        <div class="breadcrumbs"><i class="ph ph-house" style="font-size:16px;"></i><span>/</span><span class="current" id="page-title">Tablero</span></div>
+        <div class="top-actions">
+          <button class="btn-icon" onclick="toggleTheme()"><i class="ph ph-moon"></i></button>
+          <button class="btn-icon" onclick="openSettings()"><i class="ph ph-gear"></i></button>
+          <button class="btn-primary" onclick="switchView('board')"><i class="ph ph-plus"></i> Nuevo</button>
+        </div>
+      </header>
+      <div id="view-board" class="workspace"></div>
+      <div id="view-inv" class="workspace compact" style="display:none;"><div class="grid-view" id="grid-inv"></div></div>
+      <div id="view-calc" class="workspace compact" style="display:none;"><div class="mac-calc-container" id="mac-calc"></div></div>
+      <div id="view-cal" class="workspace compact" style="display:none;"><div class="mac-cal-container" id="mac-cal"></div></div>
+      <div id="view-notes" class="workspace compact" style="display:none;"><div class="notes-view" id="list-notes"></div></div>
+      <div id="view-trash" class="workspace compact" style="display:none;"><div class="notes-view" id="list-trash"></div></div>
+    </div>
+  </div>
+
+  <!-- Modals -->
+  <div class="modal" id="modal-card">
+    <div class="modal-card">
+      <div class="modal-header"><h3>✏️ Editar</h3><button class="btn-icon" onclick="closeModal('modal-card')"><i class="ph ph-x"></i></button></div>
+      <div class="modal-body">
+        <div class="form-group"><label>Título</label><input id="c-title" class="form-control"></div>
+        <div class="form-group"><label>Descripción</label><textarea id="c-desc" class="form-control" rows="3"></textarea></div>
+        <div class="form-group"><label>Portada</label><input type="file" id="c-cover-file" accept="image/*" style="padding:8px; margin-bottom:6px;"><input id="c-cover" class="form-control" placeholder="URL imagen..."></div>
+        <div class="form-group"><label>Drive Link</label><input id="c-drive" class="form-control" placeholder="https://..."></div>
+        <div class="form-group"><label>Color</label><select id="c-color" class="form-control"><option value="">Ninguno</option><option value="#007aff">🔵 Azul</option><option value="#ff3b30">🔴 Rojo</option><option value="#34c759">🟢 Verde</option><option value="#ffcc00">🟡 Amarillo</option></select></div>
+        <div class="form-group"><label>Archivos</label><input type="file" id="c-files" multiple style="padding:8px;"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-ghost" style="color:var(--danger); border-color:var(--danger);" onclick="delCard()">Eliminar</button>
+        <button class="btn-primary" onclick="saveCard()">Guardar</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="modal-settings">
+    <div class="modal-card">
+      <div class="modal-header"><h3>⚙️ Ajustes</h3><button class="btn-icon" onclick="closeModal('modal-settings')"><i class="ph ph-x"></i></button></div>
+      <div class="modal-body">
+        <div class="form-group"><label>Logo Intro</label><input type="file" id="s-logo" accept="image/*" onchange="setLogo(this)"></div>
+        <div class="form-group"><label>Tamaño Logo</label><input type="range" id="s-logo-range" min="100" max="400" value="200" oninput="setLogoSize(this.value)"></div>
+        <div class="form-group"><label>Color Principal</label><input type="color" id="s-color" onchange="setAccent(this.value)"></div>
+        <div class="form-group"><label>Sonido UI</label><input type="file" id="s-snd" accept="audio/*"></div>
+        <div class="form-group"><label>Fondo App</label><input type="file" id="s-bg" accept="image/*"></div>
+        <hr style="margin:15px 0; border:none; border-top:1px solid var(--border);">
+        <label>Almacenamiento</label>
+        <div style="display:flex; justify-content:space-between; font-size:11px; margin:4px 0;"><span id="idb-text">0 MB</span><span>~500MB</span></div>
+        <div class="storage-bar"><div class="storage-fill" id="idb-fill"></div></div>
+        <button class="btn-ghost" style="width:100%; margin-top:10px; font-size:12px;" onclick="clearIDBFiles()">Limpiar Archivos</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // --- INDEXEDDB ---
+    const DB_NAME = 'WorkspaceDB'; const DB_VERSION = 1; let idb; const fileURLs = new Map();
+    async function initIDB() { return new Promise((res, rej) => { const req = indexedDB.open(DB_NAME, DB_VERSION); req.onupgradeneeded = e => { idb=e.target.result; if(!idb.objectStoreNames.contains('files')) idb.createObjectStore('files',{keyPath:'id'}); }; req.onsuccess = e => { idb=e.target.result; res(idb); }; req.onerror = rej; }); }
+    async function saveToIDB(id, blob) { return new Promise((res, rej) => { const tx=idb.transaction('files','readwrite'); tx.objectStore('files').put({id, blob, type:blob.type, size:blob.size}); tx.oncomplete=res; tx.onerror=rej; }); }
+    async function getFromIDB(id) { return new Promise((res, rej) => { const tx=idb.transaction('files','readonly'); const req=tx.objectStore('files').get(id); req.onsuccess=()=>res(req.result); req.onerror=rej; }); }
+    async function deleteFromIDB(id) { return new Promise(res => { const tx=idb.transaction('files','readwrite'); tx.objectStore('files').delete(id); tx.oncomplete=()=>{if(fileURLs.has(id))URL.revokeObjectURL(fileURLs.get(id));fileURLs.delete(id);res();}; }); }
+    async function clearAllIDB() { return new Promise(res => { const tx=idb.transaction('files','readwrite'); tx.objectStore('files').clear(); tx.oncomplete=()=>{fileURLs.clear();res();}; }); }
+    async function getIDBSize() { return new Promise(res => { let s=0; const tx=idb.transaction('files','readonly'); const req=tx.objectStore('files').getAll(); req.onsuccess=()=>{req.result.forEach(f=>s+=f.size);res(s);}; }); }
+
+    // --- STATE ---
+    const LS = localStorage;
+    const defaultData = [{id:'l1',title:'📥 Por hacer',cards:[{id:'c1',title:'Bienvenido',desc:'Arrastra o edita.',color:'#007aff',coverId:'',drive:'',files:[]}]},{id:'l2',title:'🔄 En proceso',cards:[]},{id:'l3',title:'✅ Hecho',cards:[]}];
+    let D = { lists: JSON.parse(LS.getItem('n_lists'))||defaultData, notes: JSON.parse(LS.getItem('n_notes'))||[], cal: JSON.parse(LS.getItem('n_cal'))||[], trash: JSON.parse(LS.getItem('n_trash'))||[] };
+    let snd = new Audio(), drag = null, edit = null;
+    let calDate = new Date();
+
+    // --- CALCULATOR STATE ---
+    let calcState = { display: '0', prev: null, op: null, waiting: false };
+    const $ = id => document.getElementById(id);
+    const playSnd = () => { if(snd.src){snd.currentTime=0;snd.play().catch(()=>{});} };
+    const safeSave = () => { try{LS.setItem('n_lists',JSON.stringify(D.lists));LS.setItem('n_notes',JSON.stringify(D.notes));LS.setItem('n_cal',JSON.stringify(D.cal));LS.setItem('n_trash',JSON.stringify(D.trash));}catch(e){alert("Error guardando");} };
+    const openModal = id => { $(id).classList.add('active'); playSnd(); };
+    const closeModal = id => { $(id).classList.remove('active'); playSnd(); };
+    document.querySelectorAll('.modal').forEach(m => m.addEventListener('click', e => { if(e.target===m) closeModal(m.id); }));
+
+    // Quotes Logic
+    const quotesDB = [
+      {t:"El éxito es ir de fracaso en fracaso sin perder el entusiasmo.",a:"Churchill"},{t:"La disciplina es el puente entre metas y logros.",a:"Jim Rohn"},
+      {t:"No cuentes los días, haz que los días cuenten.",a:"Ali"},{t:"Hazlo ahora. A veces 'luego' se convierte en 'nunca'.",a:"Anónimo"},
+      {t:"La suerte es lo que ocurre cuando la preparación se encuentra con la oportunidad.",a:"Séneca"},{t:"La grandeza no consiste en no caer nunca, sino en levantarse cada vez que caes.",a:"Mandela"}
+    ];
+    let qIdx = Math.floor(Math.random() * quotesDB.length);
+    let quoteInterval;
+
+    function changeQuote() {
+      const q = quotesDB[qIdx % quotesDB.length];
+      $('qTxt').style.opacity = '0'; $('qAut').style.opacity = '0';
+      setTimeout(() => { $('qTxt').textContent = `"${q.t}"`; $('qAut').textContent = `— ${q.a}`; $('qTxt').style.opacity = '1'; $('qAut').style.opacity = '1'; }, 200);
+      qIdx++; playSnd();
+    }
+
+    function startQuoteRotation() {
+      if(quoteInterval) clearInterval(quoteInterval);
+      quoteInterval = setInterval(changeQuote, 12000);
+    }
+
+    $('qTxt').addEventListener('click', () => { changeQuote(); startQuoteRotation(); });
+
+    // Storage UI
+    async function updateStorageUI() { const s=await getIDBSize(); const mb=(s/1024/1024).toFixed(2); const p=Math.min((s/(500*1024*1024))*100,100); $('idb-text').textContent=`${mb} MB`; $('idb-fill').style.width=`${p}%`; $('idb-fill').className=`storage-fill ${p>80?'warn':''}`; }
+    async function clearIDBFiles() { if(confirm('¿Eliminar archivos adjuntos?')){ await clearAllIDB(); updateStorageUI(); alert('Listo'); } }
+
+    // Navigation
+    function switchView(view, el) {
+      if(!el) el = document.querySelector(`.nav-item[data-view="${view}"]`);
+      document.querySelectorAll('.nav-item').forEach(i=>i.classList.remove('active')); if(el)el.classList.add('active');
+      document.querySelectorAll('.workspace').forEach(w=>w.style.display='none'); $(`view-${view}`).style.display='flex';
+      $('page-title').textContent = el?el.querySelector('span').textContent:view.toUpperCase();
+      playSnd(); if(view==='inv')rInv(); if(view==='calc')rCalc(); if(view==='cal')rCal(); if(view==='notes')rNotes(); if(view==='trash')rTrash();
+      if(window.innerWidth<=768) document.querySelector('.sidebar').classList.remove('open');
+    }
+    document.querySelectorAll('.nav-item').forEach(i => i.addEventListener('click', () => switchView(i.dataset.view, i)));
+
+    // Settings
+    const openSettings = () => { openModal('modal-settings'); $('s-color').value=LS.getItem('n_accent')||'#007aff'; $('s-logo-range').value=LS.getItem('n_lsize')||200; updateStorageUI(); };
+    function toggleTheme(){document.documentElement.setAttribute('data-theme', document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark'); playSnd();}
+    function setAccent(c){document.documentElement.style.setProperty('--primary', c); LS.setItem('n_accent', c); playSnd();}
+    function setLogoSize(v){document.documentElement.style.setProperty('--logo-size', v+'px'); LS.setItem('n_lsize', v);}
+    async function setLogo(i){if(!i.files[0])return; const id='logo_'+Date.now(); await saveToIDB(id, i.files[0]); LS.setItem('n_logo', id); $('splash-logo').innerHTML=`<img src="${URL.createObjectURL(i.files[0])}">`; updateStorageUI();}
+    async function setBg(i){if(i.files[0]){const id='bg_'+Date.now(); await saveToIDB(id, i.files[0]); LS.setItem('n_bg', id); document.body.style.backgroundImage=`url(${URL.createObjectURL(i.files[0])})`; updateStorageUI();}}
+    function setSnd(i){if(i.files[0]){const r=new FileReader(); r.onload=e=>{LS.setItem('n_snd',e.target.result);snd.src=e.target.result;}; r.readAsDataURL(i.files[0]);}}
+
+    // --- CALCULATOR LOGIC ---
+    function rCalc() {
+      const container = $('mac-calc');
+      container.innerHTML = `
+        <div class="mac-calc-display" id="calc-display">0</div>
+        <div class="mac-calc-grid">
+          <button class="calc-btn func" data-action="clear">AC</button>
+          <button class="calc-btn func" data-action="sign">+/-</button>
+          <button class="calc-btn func" data-action="percent">%</button>
+          <button class="calc-btn op" data-action="operator" data-val="÷">÷</button>
+          <button class="calc-btn num" data-val="7">7</button>
+          <button class="calc-btn num" data-val="8">8</button>
+          <button class="calc-btn num" data-val="9">9</button>
+          <button class="calc-btn op" data-action="operator" data-val="×">×</button>
+          <button class="calc-btn num" data-val="4">4</button>
+          <button class="calc-btn num" data-val="5">5</button>
+          <button class="calc-btn num" data-val="6">6</button>
+          <button class="calc-btn op" data-action="operator" data-val="-">−</button>
+          <button class="calc-btn num" data-val="1">1</button>
+          <button class="calc-btn num" data-val="2">2</button>
+          <button class="calc-btn num" data-val="3">3</button>
+          <button class="calc-btn op" data-action="operator" data-val="+">+</button>
+          <button class="calc-btn num zero" data-val="0">0</button>
+          <button class="calc-btn num" data-val=".">.</button>
+          <button class="calc-btn op" data-action="equals">=</button>
+        </div>`;
+      updateCalcDisplay();
+      
+      container.onclick = e => {
+        const btn = e.target.closest('.calc-btn'); if(!btn) return;
+        const action = btn.dataset.action, val = btn.dataset.val;
+        playSnd();
+        if(action === 'operator') handleOperator(val);
+        else if(action === 'equals') calculate();
+        else if(action === 'clear') clearAll();
+        else if(action === 'sign') toggleSign();
+        else if(action === 'percent') percent();
+        else inputDigit(val);
+      };
+    }
+    function updateCalcDisplay() {
+      const disp = $('calc-display'); if(!disp) return;
+      let txt = calcState.display;
+      if(txt.length > 9) disp.style.fontSize = '36px'; else disp.style.fontSize = '64px';
+      disp.textContent = txt;
+      document.querySelectorAll('.calc-btn.op').forEach(b => b.classList.toggle('active', b.dataset.val === calcState.op && calcState.waiting));
+    }
+    function inputDigit(d) {
+      if(calcState.waiting) { calcState.display = d; calcState.waiting = false; }
+      else calcState.display = calcState.display === '0' ? d : calcState.display + d;
+      updateCalcDisplay();
+    }
+    function handleOperator(nextOp) {
+      const inp = parseFloat(calcState.display);
+      if(calcState.prev === null) calcState.prev = inp;
+      else if(calcState.op) { const res = performCalc(calcState.prev, inp, calcState.op); calcState.display = String(res); calcState.prev = res; }
+      calcState.waiting = true; calcState.op = nextOp; updateCalcDisplay();
+    }
+    function calculate() {
+      if(!calcState.op || calcState.waiting) return;
+      const inp = parseFloat(calcState.display);
+      const res = performCalc(calcState.prev, inp, calcState.op);
+      calcState.display = String(res); calcState.prev = null; calcState.op = null; calcState.waiting = true; updateCalcDisplay();
+    }
+    function performCalc(a, b, op) {
+      let r = 0;
+      if(op === '+') r = a + b; else if(op === '-') r = a - b; else if(op === '×') r = a * b; else if(op === '÷') r = b !== 0 ? a / b : 'Error';
+      return Math.round(r * 1e10) / 1e10;
+    }
+    function clearAll() { calcState = { display: '0', prev: null, op: null, waiting: false }; updateCalcDisplay(); }
+    function toggleSign() { calcState.display = String(parseFloat(calcState.display) * -1); updateCalcDisplay(); }
+    function percent() { calcState.display = String(parseFloat(calcState.display) / 100); updateCalcDisplay(); }
+
+    // --- CALENDAR ---
+    function rCal() {
+      const container = $('mac-cal');
+      const months = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+      const days = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+      const year = calDate.getFullYear(), month = calDate.getMonth(), today = new Date();
+      const firstDay = new Date(year, month, 1).getDay(), daysInMonth = new Date(year, month + 1, 0).getDate(), prevMonthDays = new Date(year, month, 0).getDate();
+      let tasksMap = {};
+      D.lists.forEach(l => l.cards.forEach(c => { const dStr = (c.desc + " " + c.title).match(/\b(\d{1,2})\b/); if(dStr){const d=parseInt(dStr[1]); if(d>=1&&d<=31) tasksMap[d]=tasksMap[d]?[...tasksMap[d],c.title]:[c.title]; }}));
+      let html = `<div class="mac-cal-header"><div class="mac-cal-nav"><button class="mac-cal-btn" onclick="calDate.setMonth(calDate.getMonth()-1);rCal()"><i class="ph ph-caret-left"></i></button><button class="mac-cal-btn" onclick="calDate.setMonth(calDate.getMonth()+1);rCal()"><i class="ph ph-caret-right"></i></button></div><div class="mac-cal-title">${months[month]} ${year}</div><div style="width:60px"></div></div><div class="mac-cal-grid">${days.map(d=>`<div class="mac-cal-head">${d}</div>`).join('')}`;
+      for(let i=firstDay-1;i>=0;i--) html+=`<div class="mac-cal-day other-month"><div class="mac-cal-num">${prevMonthDays-i}</div></div>`;
+      for(let d=1;d<=daysInMonth;d++){const isToday=d===today.getDate()&&month===today.getMonth()&&year===today.getFullYear();const tasks=tasksMap[d]||[];const taskHtml=tasks.slice(0,2).map(t=>`<div class="mac-cal-task">${t}</div>`).join('');html+=`<div class="mac-cal-day ${isToday?'today':''}"><div class="mac-cal-num">${d}</div>${taskHtml}</div>`;}
+      const totalCells=firstDay+daysInMonth, nextDays=42-totalCells;
+      for(let i=1;i<=nextDays;i++) html+=`<div class="mac-cal-day other-month"><div class="mac-cal-num">${i}</div></div>`;
+      html+=`</div>`; container.innerHTML = html;
+    }
+
+    // --- BOARD ---
+    async function rBoard(){
+      const board = $('view-board'); board.innerHTML = '';
+      D.lists.forEach(list => {
+        const listEl = document.createElement('div'); listEl.className='list';
+        listEl.innerHTML = `<div class="list-header"><input class="list-title-input" value="${list.title}"><span class="list-count">${list.cards.length}</span><div class="three-dots"><button class="btn-icon" onclick="toggleMenu(this, event)"><i class="ph ph-dots-three"></i></button><div class="drop-menu"><div class="drop-item" onclick="delList('${list.id}')"><i class="ph ph-trash"></i> Eliminar</div></div></div></div><div class="list-cards" id="c-${list.id}"></div><button class="add-card-btn" onclick="addC('${list.id}')"><i class="ph ph-plus-circle"></i> Añadir</button>`;
+        listEl.querySelector('.list-title-input').onchange = e => { list.title=e.target.value; safeSave(); };
+        const cardsBox = listEl.querySelector('.list-cards');
+        cardsBox.ondragover = e => { e.preventDefault(); cardsBox.style.background='rgba(0,0,0,0.03)'; };
+        cardsBox.ondragleave = () => cardsBox.style.background='';
+        cardsBox.ondrop = e => { e.preventDefault(); cardsBox.style.background=''; if(drag && drag.listId !== list.id) { const s=D.lists.find(l=>l.id===drag.listId); const t=D.lists.find(l=>l.id===list.id); if(s&&t){t.cards.push(s.cards.splice(drag.cardIdx,1)[0]); safeSave(); rBoard(); playSnd();} } };
+        list.cards.forEach((card, idx) => {
+          const cardEl = document.createElement('div'); cardEl.className='card'; cardEl.draggable=true;
+          let cover = card.coverId ? `<div class="card-cover" id="cov-${card.id}"><div class="card-cover-overlay"></div></div>` : '';
+          let drive = card.drive ? `<a href="${card.drive}" target="_blank" class="meta-item" style="text-decoration:none;color:var(--primary)"><i class="ph ph-google-drive-logo"></i> Drive</a>` : '';
+          cardEl.innerHTML = `${card.color?`<div class="card-stripe" style="background:${card.color}"></div>`:''}${cover}<div class="card-title">${card.title}</div>${card.desc?`<div class="card-desc">${card.desc}</div>`:''}<div class="card-meta"><span class="meta-item"><i class="ph ph-paperclip"></i> ${card.files.length}</span>${drive}</div><div class="three-dots"><button class="btn-icon" onclick="toggleMenu(this, event)"><i class="ph ph-dots-three"></i></button><div class="drop-menu"><div class="drop-item" onclick="editCard('${list.id}',${idx})"><i class="ph ph-pencil-simple"></i> Editar</div><div class="drop-item danger" onclick="delCardDirect('${list.id}',${idx})"><i class="ph ph-trash"></i> Borrar</div></div></div>`;
+          cardEl.onclick = e => { if(!e.target.closest('.three-dots')) editCard(list.id, idx); };
+          cardEl.ondragstart = e => { drag={listId:list.id, cardIdx:idx}; cardEl.style.opacity='0.4'; playSnd(); };
+          cardEl.ondragend = () => { drag=null; cardEl.style.opacity='1'; };
+          cardsBox.appendChild(cardEl);
+          if(card.coverId) getFromIDB(card.coverId).then(f => { if(f&&$(`cov-${card.id}`)) $(`cov-${card.id}`).style.backgroundImage=`url(${URL.createObjectURL(f.blob)})`; });
+        });
+        board.appendChild(listEl);
+      });
+      const addBtn = document.createElement('div'); addBtn.className='add-list-btn'; addBtn.innerHTML = '<i class="ph ph-plus"></i>';
+      addBtn.onclick = () => { const t=prompt('Nombre lista:'); if(t&&t.trim()){D.lists.push({id:'l'+Date.now(), title:t.trim(), cards:[]}); safeSave(); rBoard(); playSnd();} };
+      board.appendChild(addBtn);
+    }
+    function toggleMenu(btn, e) { e.stopPropagation(); btn.nextElementSibling.classList.toggle('show'); }
+    document.addEventListener('click', () => document.querySelectorAll('.drop-menu').forEach(m => m.classList.remove('show')));
+    function addC(id){const t=prompt('Nombre:'); if(t&&t.trim()){D.lists.find(l=>l.id===id).cards.push({id:'c'+Date.now(), title:t.trim(), desc:'', color:'', coverId:'', drive:'', files:[]}); safeSave(); rBoard(); playSnd();}}
+    function editCard(lId, cIdx){ edit={listId:lId, cardIdx:cIdx}; const c=D.lists.find(l=>l.id===lId).cards[cIdx]; $('c-title').value=c.title; $('c-desc').value=c.desc||''; $('c-color').value=c.color||''; $('c-drive').value=c.drive||''; $('c-cover').value=''; $('c-cover-file').value=''; openModal('modal-card'); }
+    async function saveCard(){
+      if(!edit)return; const c=D.lists.find(l=>l.id===edit.listId).cards[edit.cardIdx];
+      c.title=$('c-title').value.trim()||'Sin título'; c.desc=$('c-desc').value; c.color=$('c-color').value; c.drive=$('c-drive').value;
+      const f=$('c-cover-file').files[0], url=$('c-cover').value.trim();
+      if(f){ const id='cov_'+Date.now(); await saveToIDB(id, f); c.coverId=id; } else if(url){ c.coverId='url:'+url; } else { c.coverId=''; }
+      const files=$('c-files').files;
+      if(files.length){ let ld=0; Array.from(files).forEach(fl=>{const r=new FileReader(); r.onload=async e=>{const id='att_'+Date.now()+'_'+Math.random().toString(36).substr(2,5); await saveToIDB(id, new Blob([e.target.result],{type:fl.type})); c.files.push({id, name:fl.name, type:fl.type}); if(++ld===files.length) finalizeSave();}; r.readAsArrayBuffer(fl);}); }
+      else finalizeSave();
+    }
+    async function finalizeSave(){ safeSave(); await rBoard(); closeModal('modal-card'); playSnd(); updateStorageUI(); }
+    async function delCard(){ if(edit&&confirm('¿Borrar?')){ const l=D.lists.find(x=>x.id===edit.listId), c=l.cards[edit.cardIdx]; if(c.coverId&&!c.coverId.startsWith('url:'))await deleteFromIDB(c.coverId); for(const f of c.files) await deleteFromIDB(f.id); D.trash.push({type:'card', card:c, date:new Date().toLocaleString()}); l.cards.splice(edit.cardIdx,1); safeSave(); await rBoard(); closeModal('modal-card'); playSnd(); updateStorageUI(); } }
+    async function delCardDirect(lId, cIdx){ if(confirm('¿Borrar?')){ const l=D.lists.find(x=>x.id===lId), c=l.cards[cIdx]; if(c.coverId&&!c.coverId.startsWith('url:'))await deleteFromIDB(c.coverId); for(const f of c.files) await deleteFromIDB(f.id); D.trash.push({type:'card', card:c, date:new Date().toLocaleString()}); l.cards.splice(cIdx,1); safeSave(); await rBoard(); playSnd(); updateStorageUI(); } }
+    async function delList(id){ if(confirm('¿Eliminar lista?')){ const l=D.lists.find(x=>x.id===id); for(const c of l.cards){if(c.coverId&&!c.coverId.startsWith('url:'))await deleteFromIDB(c.coverId);for(const f of c.files)await deleteFromIDB(f.id);} D.trash.push({type:'list', list:l, date:new Date().toLocaleString()}); D.lists=D.lists.filter(x=>x.id!==id); safeSave(); await rBoard(); playSnd(); updateStorageUI(); } }
+
+    // --- EXTRAS ---
+    function rInv(){const g=$('grid-inv'); g.innerHTML=''; let all=[]; D.lists.forEach(l=>l.cards.forEach(c=>c.files.forEach(f=>all.push({id:f.id, name:f.name, list:l.title})))); if(!all.length){g.innerHTML='<p style="opacity:0.5;text-align:center;padding:40px;">Sin archivos.</p>';return;} all.forEach(async f=>{const d=document.createElement('div'); d.className='file-card'; const b=await getFromIDB(f.id); const u=b?URL.createObjectURL(b.blob):''; const im=f.name.match(/\.(jpg|jpeg|png|gif)$/i); d.innerHTML=`${im?`<img src="${u}" style="width:100%;height:100px;object-fit:cover;border-radius:4px;margin-bottom:8px;">`:'<div style="height:100px;background:var(--bg-hover);display:flex;align-items:center;justify-content:center;font-size:30px;color:var(--text-secondary);margin-bottom:8px;border-radius:4px;">📄</div>'}<div style="font-weight:600;font-size:13px;">${f.name}</div><div style="font-size:11px;color:var(--text-secondary);">${f.list}</div>`; g.appendChild(d);});}
+    function rNotes(){const w=$('list-notes'); w.innerHTML=`<button class="btn-primary" onclick="addNote()" style="margin-bottom:16px;"><i class="ph ph-plus"></i> Nueva Nota</button>`; D.notes.forEach((n,i)=>{const d=document.createElement('div'); d.className='note-item'; d.innerHTML=`<div class="note-title">${n.t}</div><div style="background:var(--bg-hover);padding:8px;border-radius:4px;margin-top:4px;font-family:monospace;filter:blur(4px);cursor:pointer;" onclick="this.style.filter='none'">${n.c}</div><button class="btn-icon" style="position:absolute;top:10px;right:10px;" onclick="delNote(${i})"><i class="ph ph-trash"></i></button>`; w.appendChild(d);});}
+    function addNote(){const t=prompt('Título:'), c=prompt('Contenido:'); if(t&&c){D.notes.push({t,c}); safeSave(); rNotes(); playSnd();}}
+    function delNote(i){if(confirm('¿Borrar?')){D.notes.splice(i,1); safeSave(); rNotes(); playSnd();}}
+    function rTrash(){const w=$('list-trash'); w.innerHTML=''; if(!D.trash.length){w.innerHTML='<p style="text-align:center;opacity:0.5;padding:40px;">Papelera vacía.</p>';return;} w.innerHTML='<h3 style="margin-bottom:10px;">♻️ Papelera</h3>'; D.trash.forEach((it,i)=>{const d=document.createElement('div'); d.className='note-item'; const nm=it.card.title||it.list.title||'Item'; d.innerHTML=`<div class="note-title">${nm}</div><div style="font-size:11px;color:var(--text-secondary);">${it.date} (${it.type})</div><button class="btn-icon" style="position:absolute;top:10px;right:10px;" onclick="permDel(${i})"><i class="ph ph-x"></i></button>`; w.appendChild(d);});}
+    function permDel(i){if(confirm('¿Eliminar permanentemente?')){D.trash.splice(i,1);safeSave();rTrash();playSnd();}}
+
+    // --- INIT ---
+    window.addEventListener('DOMContentLoaded', async () => {
+      await initIDB(); changeQuote(); startQuoteRotation();
+      const bg=LS.getItem('n_bg'); if(bg){const f=await getFromIDB(bg); if(f)document.body.style.backgroundImage=`url(${URL.createObjectURL(f.blob)})`;}
+      if(LS.getItem('n_accent'))document.documentElement.style.setProperty('--primary', LS.getItem('n_accent'));
+      if(LS.getItem('n_snd'))snd.src=LS.getItem('n_snd');
+      if(LS.getItem('n_lsize'))document.documentElement.style.setProperty('--logo-size', LS.getItem('n_lsize')+'px');
+      const lg=LS.getItem('n_logo'); if(lg){const f=await getFromIDB(lg); if(f)$('splash-logo').innerHTML=`<img src="${URL.createObjectURL(f.blob)}">`;}
+      await rBoard(); updateStorageUI();
+    });
+  </script>
+</body>
+</html>
