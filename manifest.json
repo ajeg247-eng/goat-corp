@@ -1,0 +1,22 @@
+{
+  "name": "ProCreator",
+  "short_name": "ProCreator",
+  "description": "Ecosistema de productividad profesional para creadores",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#000000",
+  "orientation": "any",
+  "scope": "/",
+  "categories": ["productivity", "utilities"],
+  "icons": [
+    {
+      "src": "./logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [],
+  "prefer_related_applications": false
+}
